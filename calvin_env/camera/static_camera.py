@@ -60,10 +60,10 @@ class StaticCamera(Camera):
         look_at = [float(x) for x in look_at]
         return look_from, look_at
 
-    def render(self):
+    def render(self, height=None, width=None):
         image = p.getCameraImage(
-            width=self.width,
-            height=self.height,
+            width=(width if width is not None else self.width),
+            height=(height if height is not None else self.height),
             viewMatrix=self.viewMatrix,
             projectionMatrix=self.projectionMatrix,
             physicsClientId=self.cid,

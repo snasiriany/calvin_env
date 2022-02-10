@@ -33,7 +33,9 @@ class TactileSensor(Camera):
             self.digits.add_object(obj.file.as_posix(), obj.uid, obj.global_scaling)
         self.visualize_gui = visualize_gui
 
-    def render(self):
+    def render(self, height=None, width=None):
+        ### height and width arguments ignored ###
+
         rgb, depth = self.digits.render()
         if self.visualize_gui:
             self.digits.updateGUI(rgb, depth)

@@ -22,7 +22,7 @@ class GripperCamera(Camera):
 
         self.name = name
 
-    def render(self):
+    def render(self, height=None, width=None):
         camera_ls = p.getLinkState(
             bodyUniqueId=self.robot_uid, linkIndex=self.gripper_cam_link, physicsClientId=self.cid
         )
@@ -36,8 +36,8 @@ class GripperCamera(Camera):
             fov=self.fov, aspect=self.aspect, nearVal=self.nearval, farVal=self.farval
         )
         image = p.getCameraImage(
-            width=self.width,
-            height=self.height,
+            width=(width if width is not None else self.width),
+            height=(height if height is not None else self.height),
             viewMatrix=self.view_matrix,
             projectionMatrix=self.projection_matrix,
             physicsClientId=self.cid,

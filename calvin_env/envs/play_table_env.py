@@ -148,9 +148,9 @@ class PlayTableSimEnv(gym.Env):
         else:
             print("does not own physics client id")
 
-    def render(self, mode="human"):
+    def render(self, mode="human", height=None, width=None):
         """render is gym compatibility function"""
-        rgb_obs, depth_obs = self.get_camera_obs()
+        rgb_obs, depth_obs = self.get_camera_obs(height=height, width=width)
         if mode == "human":
             if "rgb_static" not in rgb_obs:
                 log.warning("Environment does not have static camera")
@@ -178,12 +178,12 @@ class PlayTableSimEnv(gym.Env):
         # self.robot.np_random = self.np_random  # use the same np_randomizer for robot as for env
         return [seed]
 
-    def get_camera_obs(self):
+    def get_camera_obs(self, height=None, width=None):
         assert self.cameras is not None
         rgb_obs = {}
         depth_obs = {}
         for cam in self.cameras:
-            rgb, depth = cam.render()
+            rgb, depth = cam.render(height=height, width=width)
             rgb_obs[f"rgb_{cam.name}"] = rgb
             depth_obs[f"depth_{cam.name}"] = depth
         return rgb_obs, depth_obs
