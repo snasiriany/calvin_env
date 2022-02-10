@@ -69,7 +69,7 @@ def main():
 
     env_meta = dict(
         type=EB.EnvType.CALVIN_TYPE,
-        env_name="test",
+        env_name="play",
         env_kwargs=dict(),
     )
     data_grp.attrs["env_args"] = json.dumps(env_meta, indent=4)

@@ -13,16 +13,27 @@ import quaternion  # noqa
 from calvin_env.io_utils.data_recorder import DataRecorder
 from calvin_env.io_utils.vr_input import VrInput
 
+from robomimic.envs.env_calvin import EnvCalvin
+import robomimic.utils.obs_utils as ObsUtils
+
 from robosuite.devices import SpaceMouse
 
 # A logger for this file
 log = logging.getLogger(__name__)
 
 
-@hydra.main(config_path="../conf", config_name="config_demo")
-def main(cfg):
+# @hydra.main(config_path="../conf", config_name="config_demo")
+def main():
     # Load Scene
-    env = hydra.utils.instantiate(cfg.env)
+    # env = hydra.utils.instantiate(cfg.env)
+    env = EnvCalvin('turn_on_led', render=True)
+    dummy_spec = dict(
+        obs=dict(
+            low_dim=["robot_obs", "scene_obs"],
+            rgb=[],
+        ),
+    )
+    ObsUtils.initialize_obs_utils_with_obs_specs(obs_modality_specs=dummy_spec)
     # vr_input = hydra.utils.instantiate(cfg.vr_input)
 
     # data_recorder = None
@@ -45,7 +56,7 @@ def main(cfg):
 
         action, grasp = input2action(device)
 
-        obs, _, _, info = env.step(action)
+        obs, r, d, info = env.step(action)
         done = False
 
         env.render()
