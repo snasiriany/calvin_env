@@ -144,7 +144,6 @@ class PlayTableSimEnv(gym.Env):
                     self.p.disconnect(physicsClientId=self.cid)
                 except TypeError:
                     pass
-
         else:
             print("does not own physics client id")
 
@@ -210,6 +209,8 @@ class PlayTableSimEnv(gym.Env):
         robot_obs, robot_info = self.robot.get_observation()
         scene_obs = self.scene.get_obs()
         obs = {"robot_obs": robot_obs, "scene_obs": scene_obs}
+        for k in ["eef_pos", "eef_quat", "eef_euler", "gripper_qpos", "joint_qpos", "prev_gripper_action"]:
+            obs["robot0_{}".format(k)] = robot_info[k]
         return obs
 
     def get_info(self):

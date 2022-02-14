@@ -193,8 +193,12 @@ class Robot:
         - robot_info: Dict
         """
         tcp_pos, tcp_orn = p.getLinkState(self.robot_uid, self.tcp_link_id, physicsClientId=self.cid)[:2]
+        tcp_orn_quat = tcp_orn
+        tcp_orn_euler = p.getEulerFromQuaternion(tcp_orn_quat)
         if self.euler_obs:
-            tcp_orn = p.getEulerFromQuaternion(tcp_orn)
+            tcp_orn = tcp_orn_euler
+        else:
+            tcp_orn = tcp_orn_quat
         gripper_opening_width = (
             p.getJointState(self.robot_uid, self.gripper_joint_ids[0], physicsClientId=self.cid)[0]
             + p.getJointState(self.robot_uid, self.gripper_joint_ids[1], physicsClientId=self.cid)[0]
@@ -203,6 +207,7 @@ class Robot:
         for i in self.arm_joint_ids:
             arm_joint_states.append(p.getJointState(self.robot_uid, i, physicsClientId=self.cid)[0])
         robot_state = np.array([*tcp_pos, *tcp_orn, gripper_opening_width, *arm_joint_states, self.gripper_action])
+
         robot_info = {
             "tcp_pos": tcp_pos,
             "tcp_orn": tcp_orn,
@@ -211,6 +216,14 @@ class Robot:
             "gripper_action": self.gripper_action,
             "uid": self.robot_uid,
             "contacts": p.getContactPoints(bodyA=self.robot_uid, physicsClientId=self.cid),
+
+            ### additional logging ###
+            "eef_pos": np.array(tcp_pos),
+            "eef_quat": np.array(tcp_orn_quat),
+            "eef_euler": np.array(tcp_orn_euler),
+            "gripper_qpos": np.array([gripper_opening_width]),
+            "joint_qpos": np.array(arm_joint_states),
+            "prev_gripper_action": np.array([self.gripper_action])
         }
         return robot_state, robot_info
 
