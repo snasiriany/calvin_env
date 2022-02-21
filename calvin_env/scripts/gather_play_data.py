@@ -12,16 +12,16 @@ from calvin_env.scripts.gather_data_utils import gather_trajectory
 def main():
     dataset_path = '/home/soroushn/research/calvin/dataset/task_D_D/training'
 
-    output_dataset = '/home/soroushn/tmp/test.hdf5'
-    # output_dataset = '/home/soroushn/research/robomimic-dev/datasets/calvin/task_D_D_ld.hdf5'
-    # output_dataset = '/home/soroushn/research/robomimic-dev/datasets/calvin/test.hdf5'
-
     max_total_steps = 1000000 #25000
-    store_images = False
+    traj_size = 1000
+    store_images = True
     show_images = False
 
-    if show_images:
-        assert max_total_steps < 50000
+    output_dataset = '/home/soroushn/tmp/test.hdf5'
+    # output_dataset = '/home/soroushn/research/mtil/datasets/calvin/task_D_D.hdf5'
+
+    # if store_images:
+    #     assert max_total_steps <= 50000
 
     f_out = h5py.File(output_dataset, "w")
     data_grp = f_out.create_group("data")
@@ -43,26 +43,30 @@ def main():
     total_euler_warnings = 0
     ep_num = 1
     for (start, end) in ep_start_end_ids:
-        print("Writing episode # {} ...".format(ep_num))
-        ep_data_grp = data_grp.create_group('demo_{}'.format(ep_num))
+        for curr in range(start, end, traj_size):
+            print("Writing episode # {} ...".format(ep_num))
+            ep_data_grp = data_grp.create_group('demo_{}'.format(ep_num))
 
-        traj, traj_info = gather_trajectory(
-            dataset_path, start, end, env,
-            store_images=store_images, show_images=show_images,
-            max_steps=max_total_steps-total_num_steps,
-        )
+            traj, traj_info = gather_trajectory(
+                dataset_path, curr, min(curr+traj_size, end + 1), env,
+                store_images=store_images, show_images=show_images,
+                max_steps=max_total_steps-total_num_steps,
+            )
 
-        ep_data_grp.create_dataset("states", data=np.array(traj["states"]))
-        ep_data_grp.create_dataset("actions", data=np.array(traj["actions"]))
-        for k in traj["obs"]:
-            ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]))
-        ep_data_grp.attrs["num_samples"] = len(traj["actions"])
+            ep_data_grp.create_dataset("states", data=np.array(traj["states"]))
+            ep_data_grp.create_dataset("actions", data=np.array(traj["actions"]))
+            for k in traj["obs"]:
+                ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]))
+            ep_data_grp.attrs["num_samples"] = len(traj["actions"])
 
-        total_num_steps += traj_info['num_steps']
-        total_euler_warnings += traj_info['num_euler_warnings']
+            total_num_steps += traj_info['num_steps']
+            total_euler_warnings += traj_info['num_euler_warnings']
 
-        ep_num += 1
-        print("Euler warning percent: {:.2f} %".format(total_euler_warnings / total_num_steps * 100))
+            ep_num += 1
+            print("Euler warning percent: {:.2f} %".format(total_euler_warnings / total_num_steps * 100))
+
+            if total_num_steps >= max_total_steps:
+                break
 
         if total_num_steps >= max_total_steps:
             break

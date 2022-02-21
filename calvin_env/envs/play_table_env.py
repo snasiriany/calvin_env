@@ -81,7 +81,7 @@ class PlayTableSimEnv(gym.Env):
         if self.cid < 0:
             self.ownsPhysicsClient = True
             if self.use_vr:
-                self.p = bc.BulletClient(connection_mode=p.SHARED_MEMORY)
+                self.p = bc.BulletClient(connection_mode=p.GUI) #p.SHARED_MEMORY)
                 cid = self.p._client
                 if cid < 0:
                     log.error("Failed to connect to SHARED_MEMORY bullet server.\n" " Is it running?")

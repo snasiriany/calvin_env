@@ -25,7 +25,7 @@ def main():
         # 'stack_block' # nice, and multi-modal
         'place_in_slider' # nice
     )
-    output_dataset = os.path.join('/home/soroushn/research/robomimic-dev/datasets/calvin', target_task + '_D_D_ld.hdf5')
+    output_dataset = os.path.join('/home/soroushn/research/mtil/datasets/calvin', target_task + '_D_D.hdf5')
     # output_dataset = '/home/soroushn/tmp/test.hdf5'
 
     env = EnvCalvin(target_task, render=False)
@@ -37,7 +37,7 @@ def main():
     )
     ObsUtils.initialize_obs_utils_with_obs_specs(obs_modality_specs=dummy_spec)
 
-    store_images = False
+    store_images = True
     show_images = False
 
     f_out = h5py.File(output_dataset, "w")
@@ -60,7 +60,7 @@ def main():
         start, end = start_end_ids[i]
 
         traj, traj_info = gather_trajectory(
-            dataset_path, start, end, env,
+            dataset_path, start, end + 1, env,
             store_images=store_images, show_images=show_images,
         )
 
