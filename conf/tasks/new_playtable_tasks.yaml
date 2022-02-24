@@ -50,6 +50,10 @@ tasks:
   # pushing into drawer
   push_into_drawer: [push_object_into, ['block_red', 'block_blue', 'block_pink'], 'table', 'base_link', 'table', 'drawer_link']
 
+  # move slider left, open drawer, turn on light, turn on led
+  slider_drawer_light_led: [slider_drawer_light_led]
+  cleanup: [cleanup]
+
 # signatures of available base tasks:
 # rotate_object(obj_name, degrees, x_y_threshold=30, z_treshold=180):
 # push_object(obj_name, x_direction, y_direction):

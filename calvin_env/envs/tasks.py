@@ -308,3 +308,22 @@ class Tasks:
                 ):
                     return True
         return False
+
+    @staticmethod
+    def slider_drawer_light_led(start_info, end_info):
+        slider_left = Tasks.move_door_rel('base__slide', 0.15, start_info, end_info)
+        drawer = Tasks.move_door_rel('base__drawer', 0.12, start_info, end_info)
+        light = Tasks.toggle_light('lightbulb', 0, 1, start_info, end_info)
+        led = Tasks.toggle_light('led', 0, 1, start_info, end_info)
+
+        return (slider_left and drawer and light and led)
+
+    @staticmethod
+    def cleanup(start_info, end_info):
+        obj_in_drawer = []
+        for obj in ['block_red', 'block_blue', 'block_pink']:
+            obj_in_drawer.append(0.30 <= end_info["scene_info"]["movable_objects"][obj]['current_pos'][2] <= 0.40) #hack
+        drawer = end_info["scene_info"]["doors"]["base__drawer"]["current_state"] < 0.02
+        light = Tasks.toggle_light('lightbulb', 1, 0, start_info, end_info)
+        led = Tasks.toggle_light('led', 1, 0, start_info, end_info)
+        return (all(obj_in_drawer) and drawer and light and led)

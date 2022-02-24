@@ -14,8 +14,8 @@ def main():
 
     max_total_steps = 1000000 #25000
     traj_size = 1000
-    store_images = True
-    show_images = False
+    store_images = False
+    show_images = True
 
     output_dataset = '/home/soroushn/tmp/test.hdf5'
     # output_dataset = '/home/soroushn/research/mtil/datasets/calvin/task_D_D.hdf5'

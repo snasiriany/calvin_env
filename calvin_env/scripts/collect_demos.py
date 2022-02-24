@@ -6,20 +6,12 @@ import sys
 import numpy as np
 from calvin_env.utils.input_utils import input2action
 
-import hydra
-import pybullet as p
-import quaternion  # noqa
-
-from calvin_env.io_utils.data_recorder import DataRecorder
-
 from robomimic.envs.env_calvin import EnvCalvin
 import robomimic.utils.obs_utils as ObsUtils
 
 from robosuite.devices import SpaceMouse
 
-from calvin_env.envs.play_table_env import get_env
 import calvin_env
-
 from calvin_env.io_utils.data_collection_wrapper import DataCollectionWrapper
 
 import time
@@ -29,8 +21,10 @@ import h5py
 import json
 import argparse
 
-# # A logger for this file
-# log = logging.getLogger(__name__)
+def is_empty_input_spacemouse(action):
+    if np.all(action[:6] == 0) and action[-1] == 1:
+        return True
+    return False
 
 
 def collect_human_trajectory(env, device):
@@ -46,7 +40,7 @@ def collect_human_trajectory(env, device):
         env_configuration (str): specified environment configuration
     """
 
-    imsize = 250
+    imsize = 500
 
     env.reset()
 
@@ -58,6 +52,10 @@ def collect_human_trajectory(env, device):
     task_completion_hold_count = -1  # counter to collect 10 timesteps after reaching goal
     device.start_control()
 
+    discard_traj = False
+    num_timesteps = 0
+    nonzero_ac_seen = False
+
     # Loop until we get a reset from the input or the task completes
     while True:
         # Get the newest action
@@ -65,14 +63,22 @@ def collect_human_trajectory(env, device):
 
         # If action is none, then this a reset so we should break
         if action is None:
+            discard_traj = True
             break
 
         action = np.clip(action, -1, 1)
 
+        if is_empty_input_spacemouse(action):
+            if not nonzero_ac_seen: # if have not seen nonzero action, should not be zero action
+                continue # if all demos, no action
+        else:
+            nonzero_ac_seen = True
+
         # Run environment step
-        env.step(action)
+        obs, _, _, _ = env.step(action)
+        num_timesteps += 1
         env.render(height=imsize, width=imsize)
-        time.sleep(0.05)
+        time.sleep(0.02) #0.05
 
         # Also break if we complete the task
         if task_completion_hold_count == 0:
@@ -88,7 +94,9 @@ def collect_human_trajectory(env, device):
             task_completion_hold_count = -1  # null the counter if there's no success
 
     # cleanup for end of data collection episodes
+    ep_directory = env.ep_directory
     env.close()
+    return ep_directory, discard_traj, num_timesteps
 
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episodes=None, meta_data=None):
     hdf5_path = os.path.join(out_dir, "demo.hdf5")
@@ -157,10 +165,8 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episode
     f.close()
 
 def collect_demos(args):
-    config = {
-        "env_name": args.task,
-    }
-    env = EnvCalvin(**config, render=False)
+    config = {}
+    env = EnvCalvin(env_name=args.task, **config, render=False)
     dummy_spec = dict(
         obs=dict(
             low_dim=["robot_obs", "scene_obs"],
@@ -184,10 +190,23 @@ def collect_demos(args):
 
     env_info = json.dumps(config)
 
+    excluded_eps = []
+
+    num_traj_saved = 0
+
     # collect demonstrations
     while True:
-        collect_human_trajectory(env, device)
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info)
+        print("Collecting traj # {}".format(num_traj_saved + 1))
+        ep_directory, discard_traj, num_timesteps = collect_human_trajectory(env, device)
+        print("\tkeep this traj?", not discard_traj)
+        print("\tnum timesteps:", num_timesteps)
+
+        if discard_traj:
+            excluded_eps.append(ep_directory.split('/')[-1])
+        else:
+            num_traj_saved += 1
+
+        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps)
 
 
 if __name__ == "__main__":

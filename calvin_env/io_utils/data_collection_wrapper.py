@@ -114,9 +114,9 @@ class DataCollectionWrapper(Wrapper):
         t1, t2 = str(time.time()).split(".")
         state_path = os.path.join(self.ep_directory, "state_{}_{}.npz".format(t1, t2))
         if hasattr(self.env, "unwrapped"):
-            env_name = self.env.unwrapped.__class__.__name__
+            env_name = self.env.unwrapped.name
         else:
-            env_name = self.env.__class__.__name__
+            env_name = self.env.name
         np.savez(
             state_path,
             states=np.array(self.states),
