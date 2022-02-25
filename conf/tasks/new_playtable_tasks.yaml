@@ -52,7 +52,8 @@ tasks:
 
   # move slider left, open drawer, turn on light, turn on led
   slider_drawer_light_led: [slider_drawer_light_led]
-  cleanup: [cleanup]
+  cleanup: [cleanup, ['block_red', 'block_blue', 'block_pink']]
+  cleanup_pink: [cleanup, ['block_pink']]
 
 # signatures of available base tasks:
 # rotate_object(obj_name, degrees, x_y_threshold=30, z_treshold=180):

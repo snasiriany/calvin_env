@@ -94,8 +94,11 @@ def collect_human_trajectory(env, device):
             task_completion_hold_count = -1  # null the counter if there's no success
 
     # cleanup for end of data collection episodes
-    ep_directory = env.ep_directory
-    env.close()
+    if hasattr(env, 'ep_directory'):
+        ep_directory = env.ep_directory
+        env.close()
+    else:
+        ep_directory = None
     return ep_directory, discard_traj, num_timesteps
 
 def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episodes=None, meta_data=None):
@@ -175,13 +178,14 @@ def collect_demos(args):
     )
     ObsUtils.initialize_obs_utils_with_obs_specs(obs_modality_specs=dummy_spec)
 
-    tmp_directory = "/tmp/{}".format(str(time.time()).replace(".", "_"))
-    env = DataCollectionWrapper(env, tmp_directory)
+    if not args.debug:
+        tmp_directory = "/tmp/{}".format(str(time.time()).replace(".", "_"))
+        env = DataCollectionWrapper(env, tmp_directory)
 
     # calvin_env_base_path = os.path.abspath(os.path.join(os.path.dirname(calvin_env.__file__), os.pardir))
     # env = get_env(os.path.join(calvin_env_base_path, '../dataset/task_D_D/training'), show_gui=False)
 
-    device = SpaceMouse(pos_sensitivity=1.0, rot_sensitivity=4.0)
+    device = SpaceMouse(pos_sensitivity=1.5, rot_sensitivity=4.0) # 1 4
 
     # make a new timestamped directory
     t1, t2 = str(time.time()).split(".")
@@ -201,12 +205,13 @@ def collect_demos(args):
         print("\tkeep this traj?", not discard_traj)
         print("\tnum timesteps:", num_timesteps)
 
-        if discard_traj:
+        if discard_traj and ep_directory is not None:
             excluded_eps.append(ep_directory.split('/')[-1])
         else:
             num_traj_saved += 1
 
-        gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps)
+        if not args.debug:
+            gather_demonstrations_as_hdf5(tmp_directory, new_dir, env_info, excluded_episodes=excluded_eps)
 
 
 if __name__ == "__main__":
@@ -215,6 +220,10 @@ if __name__ == "__main__":
         "--task",
         required=True,
         type=str,
+    )
+    parser.add_argument(
+        "--debug",
+        action="store_true",
     )
 
     args = parser.parse_args()
