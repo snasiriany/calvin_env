@@ -25,8 +25,8 @@ def main():
         # 'stack_block' # nice, and multi-modal
         'place_in_slider' # nice
     )
-    output_dataset = os.path.join('/home/soroushn/research/mtil/datasets/calvin', target_task + '_D_D.hdf5')
-    # output_dataset = '/home/soroushn/tmp/test.hdf5'
+    # output_dataset = os.path.join('/home/soroushn/research/mtil/datasets/calvin', target_task + '_D_D.hdf5')
+    output_dataset = '/home/soroushn/tmp/test.hdf5'
 
     env = EnvCalvin(target_task, render=False)
     dummy_spec = dict(

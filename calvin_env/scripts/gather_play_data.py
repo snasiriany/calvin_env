@@ -15,10 +15,10 @@ def main():
     max_total_steps = 1000000 #25000
     traj_size = 1000
     store_images = False
-    show_images = True
+    show_images = False
 
-    output_dataset = '/home/soroushn/tmp/test.hdf5'
-    # output_dataset = '/home/soroushn/research/mtil/datasets/calvin/task_D_D.hdf5'
+    # output_dataset = '/home/soroushn/tmp/test.hdf5'
+    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D.hdf5'
 
     # if store_images:
     #     assert max_total_steps <= 50000

@@ -211,6 +211,14 @@ class PlayTableSimEnv(gym.Env):
         obs = {"robot_obs": robot_obs, "scene_obs": scene_obs}
         for k in ["eef_pos", "eef_quat", "eef_euler", "gripper_qpos", "joint_qpos", "prev_gripper_action"]:
             obs["robot0_{}".format(k)] = robot_info[k]
+
+        obs.update(dict(
+            non_blocks=scene_obs[:6],
+            block_red=scene_obs[6:12],
+            block_blue=scene_obs[12:18],
+            block_pink=scene_obs[18:24],
+        ))
+
         return obs
 
     def get_info(self):
