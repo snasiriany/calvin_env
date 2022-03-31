@@ -13,6 +13,7 @@ def gather_trajectory(
         obs=dict(),
         actions=[],
         states=[],
+        timestep_ids=[],
     )
 
     num_steps = 0
@@ -78,6 +79,7 @@ def gather_trajectory(
             traj['obs'][robot_key].append(proprio_dict[k])
 
         traj['states'].append(np.concatenate([data['robot_obs'], data['scene_obs']]))
+        traj['timestep_ids'].append(timestep)
 
         traj['actions'].append(data['rel_actions'])
 
