@@ -18,7 +18,7 @@ def main():
     show_images = False
 
     # output_dataset = '/home/soroushn/tmp/test.hdf5'
-    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D.hdf5'
+    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D_lang.hdf5'
 
     # if store_images:
     #     assert max_total_steps <= 50000
@@ -55,6 +55,7 @@ def main():
 
             ep_data_grp.create_dataset("states", data=np.array(traj["states"]))
             ep_data_grp.create_dataset("actions", data=np.array(traj["actions"]))
+            ep_data_grp.create_dataset("timestep_ids", data=np.array(traj["timestep_ids"]))
             for k in traj["obs"]:
                 ep_data_grp.create_dataset("obs/{}".format(k), data=np.array(traj["obs"][k]))
             ep_data_grp.attrs["num_samples"] = len(traj["actions"])

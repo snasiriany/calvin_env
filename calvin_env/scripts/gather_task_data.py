@@ -2,6 +2,7 @@ import numpy as np
 import os
 import h5py
 import json
+import argparse
 
 import robomimic.envs.env_base as EB
 from robomimic.envs.env_calvin import EnvCalvin
@@ -9,24 +10,32 @@ import robomimic.utils.obs_utils as ObsUtils
 
 from calvin_env.scripts.gather_data_utils import gather_trajectory
 
-def main():
+def gen_task_dataset(args):
     dataset_path = '/home/soroushn/research/calvin/dataset/task_D_D/training'
-    target_task = (
-        # # easy tasks
-        # 'turn_on_led' # good
-        # 'turn_on_lightbulb' # nice
-        # 'open_drawer' # possible
-        # 'move_slider_left' # good
-        #
-        # # medium tasks
-        # 'push_red_block_right' # see other
-        #
-        # # hard tasks
-        # 'stack_block' # nice, and multi-modal
-        'place_in_slider' # nice
-    )
-    # output_dataset = os.path.join('/home/soroushn/research/mtil/datasets/calvin', target_task + '_D_D.hdf5')
-    output_dataset = '/home/soroushn/tmp/test.hdf5'
+
+    target_task = args.task
+    # target_task = (
+    #     # # easy tasks
+    #     # 'turn_on_led' # good
+    #     # 'turn_on_lightbulb' # nice
+    #     # 'open_drawer' # possible
+    #     # 'move_slider_left' # good
+    #     #
+    #     # # medium tasks
+    #     # 'push_red_block_right' # see other
+    #     #
+    #     # # hard tasks
+    #     # 'stack_block' # nice, and multi-modal
+    #     'place_in_slider' # nice
+    # )
+
+    if args.output_dataset is not None:
+        output_dataset = args.output_dataset
+    else:
+        output_dataset = os.path.join(
+            '/home/soroushn/research/mtil/datasets/calvin/play_subset_datasets',
+            target_task + '_D.hdf5'
+        )
 
     env = EnvCalvin(target_task, render=False)
     dummy_spec = dict(
@@ -90,4 +99,34 @@ def main():
     os._exit(0)
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser()
+    parser.add_argument(
+        "--task",
+        type=str,
+        choices=[
+            'open_drawer',
+            'close_drawer',
+            'turn_off_lightbulb',
+            'turn_off_led',
+            'place_in_drawer',
+            'push_into_drawer',
+            'lift_pink_block_drawer',
+            'lift_pink_block_table',
+            'rotate_pink_block_right',
+            'turn_on_led',
+            'turn_on_lightbulb',
+            'move_slider_left',
+            'push_red_block_right',
+            'stack_block',
+            'place_in_slider',
+        ],
+        required=True,
+    )
+    parser.add_argument(
+        "--output_dataset",
+        type=str,
+        required=False,
+    )
+    args = parser.parse_args()
+    gen_task_dataset(args)
+    os._exit(0)
