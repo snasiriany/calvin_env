@@ -18,7 +18,7 @@ def main():
     show_images = False
 
     # output_dataset = '/home/soroushn/tmp/test.hdf5'
-    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D_lang.hdf5'
+    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D_v2.hdf5'
 
     # if store_images:
     #     assert max_total_steps <= 50000

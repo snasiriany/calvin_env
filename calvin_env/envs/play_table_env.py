@@ -214,9 +214,14 @@ class PlayTableSimEnv(gym.Env):
 
         obs.update(dict(
             non_blocks=scene_obs[:6],
+
             block_red=scene_obs[6:12],
             block_blue=scene_obs[12:18],
             block_pink=scene_obs[18:24],
+
+            eef_to_block_red_pos=robot_info["eef_pos"] - scene_obs[6:9],
+            eef_to_block_blue_pos=robot_info["eef_pos"] - scene_obs[12:15],
+            eef_to_block_pink_pos=robot_info["eef_pos"] - scene_obs[18:21],
         ))
 
         return obs
