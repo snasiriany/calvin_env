@@ -49,18 +49,25 @@ def gather_trajectory(
             traj['obs'][k].append(data[k])
 
         scene_obs = data['scene_obs']
+        robot_obs = data['robot_obs']
+
+        eef_pos = robot_obs[0:3]
+
         scene_obs_dict = dict(
             non_blocks=scene_obs[:6],
+
             block_red=scene_obs[6:12],
             block_blue=scene_obs[12:18],
             block_pink=scene_obs[18:24],
+
+            eef_to_block_red_pos=eef_pos - scene_obs[6:9],
+            eef_to_block_blue_pos=eef_pos - scene_obs[12:15],
+            eef_to_block_pink_pos=eef_pos - scene_obs[18:21],
         )
         for k in scene_obs_dict:
             if k not in traj['obs']:
                 traj['obs'][k] = []
             traj['obs'][k].append(scene_obs_dict[k])
-
-        robot_obs = data['robot_obs']
 
         proprio_dict = dict(
             eef_pos=robot_obs[0:3],
