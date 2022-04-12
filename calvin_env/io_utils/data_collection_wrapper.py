@@ -182,4 +182,5 @@ class DataCollectionWrapper(Wrapper):
         """
         if self.has_interaction:
             self._flush()
-        self.env.close()
+        if hasattr(self.env, "close"):
+            self.env.close()

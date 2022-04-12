@@ -327,3 +327,11 @@ class Tasks:
         light = Tasks.toggle_light('lightbulb', 1, 0, start_info, end_info)
         led = Tasks.toggle_light('led', 1, 0, start_info, end_info)
         return (all(block_in_drawer) and drawer and light and led)
+
+    @staticmethod
+    def cleanup_articulated(start_info, end_info):
+        drawer = end_info["scene_info"]["doors"]["base__drawer"]["current_state"] < 0.02
+        light = Tasks.toggle_light('lightbulb', 1, 0, start_info, end_info)
+        led = Tasks.toggle_light('led', 1, 0, start_info, end_info)
+        slider_right = Tasks.move_door_rel('base__slide', -0.15, start_info, end_info)
+        return (drawer and light and led and slider_right)

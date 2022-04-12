@@ -119,6 +119,8 @@ if __name__ == "__main__":
             'push_red_block_right',
             'stack_block',
             'place_in_slider',
+            'move_slider_left',
+            'move_slider_right',
         ],
         required=True,
     )
