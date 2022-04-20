@@ -20,6 +20,7 @@ import pybullet_utils.bullet_client as bc
 
 import calvin_env
 from calvin_env.utils.utils import FpsController, get_git_commit_hash, timeit
+from calvin_env.utils.utils import EglDeviceNotFoundError, get_egl_device_id
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -84,6 +85,25 @@ class PlayTableSimEnv(gym.Env):
     # From pybullet gym_manipulator_envs code
     # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/gym_manipulator_envs.py
     def initialize_bullet(self, bullet_time_step, render_width, render_height):
+        # set the gpu id
+        import egl_probe
+        valid_gpu_devices = egl_probe.get_available_devices()
+        if len(valid_gpu_devices) > 0:
+            cuda_id = valid_gpu_devices[0]
+
+            try:
+                egl_id = get_egl_device_id(cuda_id)
+            except EglDeviceNotFoundError:
+                log.warning(
+                "Couldn't find correct EGL device. Setting EGL_VISIBLE_DEVICE=0. "
+                "When using DDP with many GPUs this can lead to OOM errors. "
+                "Did you install PyBullet correctly? Please refer to calvin env README"
+                )
+                egl_id = 0
+            os.environ["EGL_VISIBLE_DEVICES"] = str(egl_id)
+            log.info(f"EGL_DEVICE_ID {egl_id} <==> CUDA_DEVICE_ID {cuda_id}")
+
+
         if self.cid < 0:
             self.ownsPhysicsClient = True
             if self.use_vr:
