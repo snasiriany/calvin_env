@@ -88,22 +88,17 @@ class PlayTableSimEnv(gym.Env):
         # set the gpu id
         import egl_probe
         valid_gpu_devices = egl_probe.get_available_devices()
-        if len(valid_gpu_devices) > 0:
-            egl_id = cuda_id = valid_gpu_devices[0]
-            print("valid_gpu_devices:", valid_gpu_devices)
-            print("egl_id:", egl_id)
-
-            # try:
-            #     egl_id = get_egl_device_id(cuda_id)
-            # except EglDeviceNotFoundError:
-            #     log.warning(
-            #     "Couldn't find correct EGL device. Setting EGL_VISIBLE_DEVICE=0. "
-            #     "When using DDP with many GPUs this can lead to OOM errors. "
-            #     "Did you install PyBullet correctly? Please refer to calvin env README"
-            #     )
-            #     egl_id = 0
-            os.environ["EGL_VISIBLE_DEVICES"] = str(egl_id)
-            log.info(f"EGL_DEVICE_ID {egl_id} <==> CUDA_DEVICE_ID {cuda_id}")
+        print("valid_gpu_devices:", valid_gpu_devices)
+        cuda_id = os.environ.get('CUDA_VISIBLE_DEVICES')
+        print("cuda_id:", cuda_id)
+        if len(cuda_id) > 0:
+            os.environ["EGL_VISIBLE_DEVICES"] = cuda_id
+            print("egl_id:", cuda_id)
+        #if len(valid_gpu_devices) > 0:
+       #     egl_id = cuda_id = valid_gpu_devices[0]
+       #     print("valid_gpu_devices:", valid_gpu_devices)
+       #     print("egl_id:", egl_id)
+       #     print("CUDA_VISIBLE_DEVICES:", os.environ.get('CUDA_VISIBLE_DEVICES')
 
 
         if self.cid < 0:
