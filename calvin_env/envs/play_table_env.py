@@ -91,7 +91,7 @@ class PlayTableSimEnv(gym.Env):
         print("valid_gpu_devices:", valid_gpu_devices)
         cuda_id = os.environ.get('CUDA_VISIBLE_DEVICES')
         print("cuda_id:", cuda_id)
-        if len(cuda_id) > 0:
+        if cuda_id is not None and len(cuda_id) > 0:
             os.environ["EGL_VISIBLE_DEVICES"] = cuda_id
             print("egl_id:", cuda_id)
         #if len(valid_gpu_devices) > 0:
