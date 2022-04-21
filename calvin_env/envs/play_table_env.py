@@ -20,6 +20,7 @@ import pybullet_utils.bullet_client as bc
 
 import calvin_env
 from calvin_env.utils.utils import FpsController, get_git_commit_hash, timeit
+from calvin_env.utils.utils import EglDeviceNotFoundError, get_egl_device_id
 
 # A logger for this file
 log = logging.getLogger(__name__)
@@ -38,6 +39,7 @@ class PlayTableSimEnv(gym.Env):
         use_scene_info,
         use_egl,
         control_freq=30,
+        cam_sizes=None,
     ):
         self.p = p
         # for calculation of FPS
@@ -64,6 +66,11 @@ class PlayTableSimEnv(gym.Env):
         self.load()
 
         # init cameras after scene is loaded to have robot id available
+        if cam_sizes is None:
+            cam_sizes = {}
+        for name in cam_sizes:
+            cameras[name]["width"] = cam_sizes[name]["width"]
+            cameras[name]["height"] = cam_sizes[name]["height"]
         self.cameras = [
             hydra.utils.instantiate(
                 cameras[name], cid=self.cid, robot_id=self.robot.robot_uid, objects=self.scene.get_objects()
@@ -78,6 +85,27 @@ class PlayTableSimEnv(gym.Env):
     # From pybullet gym_manipulator_envs code
     # https://github.com/bulletphysics/bullet3/blob/master/examples/pybullet/gym/pybullet_envs/gym_manipulator_envs.py
     def initialize_bullet(self, bullet_time_step, render_width, render_height):
+        # set the gpu id
+        import egl_probe
+        valid_gpu_devices = egl_probe.get_available_devices()
+        if len(valid_gpu_devices) > 0:
+            egl_id = cuda_id = valid_gpu_devices[0]
+            print("valid_gpu_devices:", valid_gpu_devices)
+            print("egl_id:", egl_id)
+
+            # try:
+            #     egl_id = get_egl_device_id(cuda_id)
+            # except EglDeviceNotFoundError:
+            #     log.warning(
+            #     "Couldn't find correct EGL device. Setting EGL_VISIBLE_DEVICE=0. "
+            #     "When using DDP with many GPUs this can lead to OOM errors. "
+            #     "Did you install PyBullet correctly? Please refer to calvin env README"
+            #     )
+            #     egl_id = 0
+            os.environ["EGL_VISIBLE_DEVICES"] = str(egl_id)
+            log.info(f"EGL_DEVICE_ID {egl_id} <==> CUDA_DEVICE_ID {cuda_id}")
+
+
         if self.cid < 0:
             self.ownsPhysicsClient = True
             if self.use_vr:
@@ -155,8 +183,12 @@ class PlayTableSimEnv(gym.Env):
                 log.warning("Environment does not have static camera")
                 return
             img = rgb_obs["rgb_static"][:, :, ::-1].copy()
-            cv2.imshow("simulation cam", cv2.resize(img, (500, 500)))
+            cv2.imshow("simulation cam", cv2.resize(img, (height, width)))
             cv2.waitKey(1)
+
+            # img = rgb_obs["rgb_gripper"][:, :, ::-1].copy()
+            # cv2.imshow("gripper cam", cv2.resize(img, (height, width)))
+            # cv2.waitKey(1)
         elif mode == "rgb_array":
             assert "rgb_static" in rgb_obs, "Environment does not have static camera"
             return rgb_obs["rgb_static"]
@@ -278,7 +310,7 @@ class PlayTableSimEnv(gym.Env):
         return data
 
 
-def get_env(dataset_path, obs_space=None, show_gui=True, **kwargs):
+def get_env(dataset_path, obs_space=None, show_gui=True, cam_sizes=None, **kwargs):
     from pathlib import Path
 
     from omegaconf import OmegaConf
@@ -296,7 +328,13 @@ def get_env(dataset_path, obs_space=None, show_gui=True, **kwargs):
         OmegaConf.merge(render_conf, scene_cfg)
     if not hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.initialize(".")
-    env = hydra.utils.instantiate(render_conf.env, show_gui=show_gui, use_vr=False, use_scene_info=True)
+    env = hydra.utils.instantiate(
+        render_conf.env,
+        show_gui=show_gui,
+        use_vr=False,
+        use_scene_info=True,
+        cam_sizes=cam_sizes,
+    )
     return env
 
 
