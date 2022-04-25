@@ -10,15 +10,19 @@ import robomimic.utils.obs_utils as ObsUtils
 from calvin_env.scripts.gather_data_utils import gather_trajectory
 
 def main():
-    dataset_path = '/home/soroushn/research/calvin/dataset/task_D_D/training'
+    # dataset_path = '/home/soroushn/research/calvin/dataset/task_D_D/training'
+    # scene = 'calvin_scene_D'
 
-    max_total_steps = 1000000 #25000
+    dataset_path = '/home/soroushn/research/calvin/dataset/task_ABC_D/training'
+    scene = 'calvin_scene_B'
+
+    output_dataset = '/home/soroushn/tmp/play_B_ld.hdf5'
+    # output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_A.hdf5'
+
+    max_total_steps = 1000000 #1000000 #5000
     traj_size = 1000
     store_images = False
     show_images = False
-
-    # output_dataset = '/home/soroushn/tmp/test.hdf5'
-    output_dataset = '/home/soroushn/research/mtil/datasets/calvin/play_D_v2.hdf5'
 
     # if store_images:
     #     assert max_total_steps <= 50000
@@ -28,9 +32,19 @@ def main():
 
     # ep_nums = np.array([int(ep_name[8:-4]) for ep_name in os.listdir(dataset_path) if ep_name.startswith('episode')])
     ep_start_end_ids = np.load(os.path.join(dataset_path, 'ep_start_end_ids.npy'))
+    scene_info = np.load(os.path.join(dataset_path, 'scene_info.npy'), allow_pickle=True)[()]
+    # post processing: switch A and D
+    D_tmp = scene_info.get('calvin_scene_A', None)
+    A_tmp = scene_info.get('calvin_scene_D', None)
+    scene_info.pop("calvin_scene_A", None)
+    scene_info.pop("calvin_scene_D", None)
+    if A_tmp is not None:
+        scene_info['calvin_scene_A'] = A_tmp
+    if D_tmp is not None:
+        scene_info['calvin_scene_D'] = D_tmp
 
 
-    env = EnvCalvin('play', render=False)
+    env = EnvCalvin('play', render=False, scene=scene)
     dummy_spec = dict(
         obs=dict(
             low_dim=["robot_obs", "scene_obs"],
@@ -43,6 +57,10 @@ def main():
     total_euler_warnings = 0
     ep_num = 1
     for (start, end) in ep_start_end_ids:
+        if scene is not None:
+            if start < scene_info[scene][0] or end > scene_info[scene][1]:
+                print("skipping traj from {} to {}".format(start, end))
+                continue
         for curr in range(start, end, traj_size):
             print("Writing episode # {} ...".format(ep_num))
             ep_data_grp = data_grp.create_group('demo_{}'.format(ep_num))
@@ -75,7 +93,9 @@ def main():
     env_meta = dict(
         type=EB.EnvType.CALVIN_TYPE,
         env_name="play",
-        env_kwargs=dict(),
+        env_kwargs=dict(
+            scene=scene,
+        ),
     )
     data_grp.attrs["env_args"] = json.dumps(env_meta, indent=4)
 

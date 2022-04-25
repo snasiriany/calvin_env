@@ -168,7 +168,9 @@ def gather_demonstrations_as_hdf5(directory, out_dir, env_info, excluded_episode
     f.close()
 
 def collect_demos(args):
-    config = {}
+    config = dict(
+        scene='calvin_scene_D',
+    )
     env = EnvCalvin(env_name=args.task, **config, render=False)
     dummy_spec = dict(
         obs=dict(

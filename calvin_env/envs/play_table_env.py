@@ -318,9 +318,10 @@ def get_env(dataset_path, obs_space=None, show_gui=True, cam_sizes=None, **kwarg
         }
         for k in exclude_keys:
             del render_conf.cameras[k]
-    if "scene" in kwargs:
+    if kwargs.get("scene", None) is not None:
         scene_cfg = OmegaConf.load(Path(calvin_env.__file__).parents[1] / "conf/scene" / f"{kwargs['scene']}.yaml")
-        OmegaConf.merge(render_conf, scene_cfg)
+        # OmegaConf.merge(render_conf, scene_cfg)
+        render_conf.scene = scene_cfg
     if not hydra.core.global_hydra.GlobalHydra.instance().is_initialized():
         hydra.initialize(".")
     env = hydra.utils.instantiate(

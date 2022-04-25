@@ -20,7 +20,11 @@ def gather_trajectory(
     num_euler_warnings = 0
 
     for timestep in tqdm(range(start, end)):
-        data = np.load(os.path.join(dataset_path, 'episode_{}.npz'.format(f'{timestep:07d}')))
+        try:
+            data = np.load(os.path.join(dataset_path, 'episode_{}.npz'.format(f'{timestep:07d}')))
+        except:
+            print("could not read data at timestep {}. skipping...".format(timestep))
+            continue
 
         if extract_quat:
             env_obs = env.reset(state=np.concatenate((
