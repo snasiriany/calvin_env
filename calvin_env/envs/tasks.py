@@ -335,3 +335,18 @@ class Tasks:
         led = Tasks.toggle_light('led', 1, 0, start_info, end_info)
         slider_right = Tasks.move_door_rel('base__slide', -0.15, start_info, end_info)
         return (drawer and light and led and slider_right)
+
+
+    @staticmethod
+    def setup(blocks, start_info, end_info):
+        block_on_table = []
+        for block in blocks:
+            block_pos = np.array(end_info["scene_info"]["movable_objects"][block]['current_pos'])
+            block_on_table.append(
+                np.all(block_pos >= [-0.35, -0.15, 0.455]) and
+                np.all(block_pos <= [0.35, -0.025, 0.475])
+            )
+
+        light = Tasks.toggle_light('lightbulb', 0, 1, start_info, end_info)
+        led = Tasks.toggle_light('led', 0, 1, start_info, end_info)
+        return (all(block_on_table) and light and led)

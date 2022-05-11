@@ -27,7 +27,7 @@ def is_empty_input_spacemouse(action):
     return False
 
 
-def collect_human_trajectory(env, device):
+def collect_human_trajectory(env, device, action_clip=1.0, action_scale=1.0):
     """
     Use the device (keyboard or SpaceNav 3D mouse) to collect a demonstration.
     The rollout trajectory is saved to files in npz format.
@@ -66,7 +66,8 @@ def collect_human_trajectory(env, device):
             discard_traj = True
             break
 
-        action = np.clip(action, -1, 1)
+        action[:-1] = np.clip(action[:-1] * action_scale, -action_clip, action_clip)
+        action[-1] = np.clip(action[-1], -1, 1)
 
         if is_empty_input_spacemouse(action):
             if not nonzero_ac_seen: # if have not seen nonzero action, should not be zero action
@@ -203,7 +204,11 @@ def collect_demos(args):
     # collect demonstrations
     while True:
         print("Collecting traj # {}".format(num_traj_saved + 1))
-        ep_directory, discard_traj, num_timesteps = collect_human_trajectory(env, device)
+        ep_directory, discard_traj, num_timesteps = collect_human_trajectory(
+            env, device,
+            action_clip=args.action_clip,
+            action_scale=args.action_scale,
+        )
         print("\tkeep this traj?", not discard_traj)
         print("\tnum timesteps:", num_timesteps)
 
@@ -227,6 +232,20 @@ if __name__ == "__main__":
         "--debug",
         action="store_true",
     )
+    parser.add_argument(
+        "--action_scale",
+        type=float,
+        default=1.0,
+    )
+    parser.add_argument(
+        "--action_clip",
+        type=float,
+        default=1.0,
+    )
 
     args = parser.parse_args()
+
+    assert 0.0 <= args.action_clip <= 1.0
+    assert args.action_scale >= 0.0
+
     collect_demos(args)

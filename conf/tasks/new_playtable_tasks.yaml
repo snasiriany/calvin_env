@@ -57,6 +57,8 @@ tasks:
   cleanup_pink_easy: [cleanup, ['block_pink']]
   cleanup_articulated: [cleanup_articulated]
 
+  setup: [setup, ['block_red', 'block_blue', 'block_pink']]
+
 # signatures of available base tasks:
 # rotate_object(obj_name, degrees, x_y_threshold=30, z_treshold=180):
 # push_object(obj_name, x_direction, y_direction):
