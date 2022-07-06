@@ -77,7 +77,7 @@ class PlayTableSimEnv(gym.Env):
             )
             for name in cameras
         ]
-        log.info(f"Using calvin_env with commit {get_git_commit_hash(Path(calvin_env.__file__))}.")
+        #log.info(f"Using calvin_env with commit {get_git_commit_hash(Path(calvin_env.__file__))}.")
 
     def __del__(self):
         self.close()
@@ -95,10 +95,10 @@ class PlayTableSimEnv(gym.Env):
             os.environ["EGL_VISIBLE_DEVICES"] = cuda_id
             print("egl_id:", cuda_id)
         #if len(valid_gpu_devices) > 0:
-       #     egl_id = cuda_id = valid_gpu_devices[0]
-       #     print("valid_gpu_devices:", valid_gpu_devices)
-       #     print("egl_id:", egl_id)
-       #     print("CUDA_VISIBLE_DEVICES:", os.environ.get('CUDA_VISIBLE_DEVICES')
+        #     egl_id = cuda_id = valid_gpu_devices[0]
+        #     print("valid_gpu_devices:", valid_gpu_devices)
+        #     print("egl_id:", egl_id)
+        #     print("CUDA_VISIBLE_DEVICES:", os.environ.get('CUDA_VISIBLE_DEVICES')
 
 
         if self.cid < 0:
@@ -305,7 +305,7 @@ class PlayTableSimEnv(gym.Env):
         return data
 
 
-def get_env(dataset_path, obs_space=None, show_gui=True, cam_sizes=None, **kwargs):
+def get_env(dataset_path, obs_space=None, show_gui=True, cam_sizes=None, use_egl=True, **kwargs):
     from pathlib import Path
 
     from omegaconf import OmegaConf
@@ -330,6 +330,7 @@ def get_env(dataset_path, obs_space=None, show_gui=True, cam_sizes=None, **kwarg
         use_vr=False,
         use_scene_info=True,
         cam_sizes=cam_sizes,
+        use_egl=use_egl,
     )
     return env
 
